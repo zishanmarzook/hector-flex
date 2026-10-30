@@ -1,29 +1,28 @@
-# HECTORFLEX bot setup
+# HECTORFLEX official Discord bot setup
 
-## 1. Discord Developer Portal
-Open https://discord.com/developers/applications and select the **new** HECTORFLEX application.
-In **Installation**, add the `bot` and `applications.commands` scopes for Guild Install.
-Install into your HECTORFLEX server, allowing **View Channels**, **Send Messages**, and **Read Message History** in proof channels. Do not grant Administrator.
+The bot is configured for the HECTORFLEX server and its three reputation channels. These are public Discord snowflake identifiers, **not secrets**.
 
-## 2. IDs and token (do not share the token)
-In Discord Settings > Advanced, enable Developer Mode. Right-click the server and proof channels to copy IDs.
-On your own computer, copy `.env.example` to `.env` and fill in:
-- `DISCORD_TOKEN` — from the Developer Portal Bot page; secret, never share or commit
-- `DISCORD_CLIENT_ID` — application ID
-- `DISCORD_GUILD_ID` — server ID
-- `VOUCH_CHANNEL_ID` — vouch channel ID
-- `ORDER_PROOF_CHANNEL_ID` — order-proof channel ID
+| Purpose | Discord ID |
+|---|---|
+| Server | `1403735082044227626` |
+| Vouches | `1403752243999543356` |
+| Reviews | `1403752422601658489` |
+| Order proofs | `1403752839167344681` |
 
-## 3. Run the bot
-Install Node.js 20+ and run:
-```bash
-npm install
-npm start
-```
-Commands register to your server on startup. Try `/ping`, `/help`, `/stats`, `/proofs`.
+## Installation
+In the [Discord Developer Portal](https://discord.com/developers/applications), select the **new** bot application, enable Guild Install with `bot` and `applications.commands`, and install in the server. Allow View Channel, Read Message History and Send Messages in relevant channels. Prefer least-privilege permissions to Administrator.
 
-## 4. Host continuously
-This is a persistent Discord Gateway bot: use a long-running Node.js worker/container service. GitHub Pages only serves the portfolio; it cannot host this bot. Configure environment variables in the hosting provider's secret manager.
+## Run
+1. Install Node.js 20+.
+2. Run `npm install`.
+3. Copy `.env.example` to `.env`.
+4. Set `DISCORD_CLIENT_ID` to the new application's ID.
+5. Set `DISCORD_TOKEN` to the new bot token **only in your local .env or hosting secret manager**. Never send, post, or commit it.
+6. Run `npm start`.
 
-## Planned proof synchronization
-The initial bot **does not** publish messages or count channel posts. Next, implement permission-scoped backfill, approved-public proof records, redact personal data and transaction details, deduplicate and respect message deletions, then expose a read-only website feed. Do not automatically publish every private Discord message or image. Consent and privacy review come first.
+Use `/ping`, `/help`, `/stats`, and `/proofs` to test. The links for all three proof channels are preconfigured.
+
+## Hosting and next milestones
+This Discord Gateway bot needs a continuous process host. GitHub Pages is static and cannot run it. Keep the token in provider environment variables.
+
+**Not implemented yet:** reading/backfilling Discord messages, 318 historical counts, automated website feeds, image rendering, and automatic updates. Future sync should require explicit proof-publication consent, strip personal/customer data, deduplicate messages, respect deletions/edits, and publish only approved content. Channel IDs alone do not grant Discord API access.
