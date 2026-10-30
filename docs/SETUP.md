@@ -10,7 +10,7 @@ The bot is configured for the HECTORFLEX server and its three reputation channel
 | Order proofs | `1403752839167344681` |
 
 ## Installation
-In the [Discord Developer Portal](https://discord.com/developers/applications), select the **new** bot application, enable Guild Install with `bot` and `applications.commands`, and install in the server. Allow View Channel, Read Message History and Send Messages in relevant channels. Prefer least-privilege permissions to Administrator.
+In the [Discord Developer Portal](https://discord.com/developers/applications), select the **new** bot application, enable **Message Content Intent** on the Bot page, and install it in the server. Allow View Channel, Read Message History and Send Messages in relevant channels. Prefer least-privilege permissions to Administrator.
 
 ## Run
 1. Install Node.js 20+.
@@ -20,7 +20,7 @@ In the [Discord Developer Portal](https://discord.com/developers/applications), 
 5. Set `DISCORD_TOKEN` to the new bot token **only in your local .env or hosting secret manager**. Never send, post, or commit it.
 6. Run `npm start`.
 
-Use `/ping`, `/help`, `/stats`, and `/proofs` to test. The links for all three proof channels are preconfigured.
+Use `.ping`, `.help`, `.stats`, and `.proofs` to test. The links for all three proof channels are preconfigured.
 
 ## Hosting and next milestones
 This Discord Gateway bot needs a continuous process host. GitHub Pages is static and cannot run it. Keep the token in provider environment variables.

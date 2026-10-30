@@ -1,6 +1,6 @@
 import "dotenv/config";
 import https from "node:https";
-import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, MessageFlags } from "discord.js";
+import { Client, Events, GatewayIntentBits } from "discord.js";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { ProxyAgent, setGlobalDispatcher } from "undici";
 
@@ -21,7 +21,6 @@ if (proxyUrl) {
 
 const config = {
   token: process.env.DISCORD_TOKEN,
-  clientId: process.env.DISCORD_CLIENT_ID,
   guildId: process.env.DISCORD_GUILD_ID || "1403735082044227626",
   channels: {
     vouches: process.env.VOUCH_CHANNEL_ID || "1403752243999543356",
@@ -30,18 +29,14 @@ const config = {
   },
 };
 
-if (!config.token || !config.clientId) {
-  console.error("Missing DISCORD_TOKEN or DISCORD_CLIENT_ID. See .env.example");
+if (!config.token) {
+  console.error("Missing DISCORD_TOKEN. See .env.example");
   process.exit(1);
 }
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-const commands = [
-  new SlashCommandBuilder().setName("ping").setDescription("Check whether HECTORFLEX is online"),
-  new SlashCommandBuilder().setName("help").setDescription("Show HECTORFLEX bot commands"),
-  new SlashCommandBuilder().setName("stats").setDescription("Show proof channel configuration status"),
-  new SlashCommandBuilder().setName("proofs").setDescription("Get links to HECTORFLEX vouches, reviews, and order proofs"),
-];
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+});
 
 const channelLink = (id) => `https://discord.com/channels/${config.guildId}/${id}`;
 const proofEntries = [
@@ -50,18 +45,20 @@ const proofEntries = [
   ["📦 Order proofs", config.channels.orderProofs],
 ];
 
-client.once("ready", () => console.log(`HECTORFLEX online as ${client.user.tag}`));
+client.once(Events.ClientReady, (readyClient) => console.log(`HECTORFLEX online as ${readyClient.user.tag}`));
 
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand() || interaction.guildId !== config.guildId) return;
+client.on(Events.MessageCreate, async (message) => {
+  if (message.author.bot || message.guildId !== config.guildId || !message.content.startsWith(".")) return;
+
+  const command = message.content.slice(1).trim().split(/\s+/)[0].toLowerCase();
   try {
     let content;
-    switch (interaction.commandName) {
+    switch (command) {
       case "ping":
         content = "🏓 HECTORFLEX is online!";
         break;
       case "help":
-        content = "🤖 **HECTORFLEX Official Bot**\n/ping — check status\n/stats — channel setup\n/proofs — vouch, review, and order-proof links\n\nAutomatic proof syncing is not enabled yet.";
+        content = "🤖 **HECTORFLEX Official Bot**\n.ping — check status\n.stats — channel setup\n.proofs — vouch, review, and order-proof links\n\nAutomatic proof syncing is not enabled yet.";
         break;
       case "stats":
         content = "📊 **Configured channels**\n" + proofEntries.map(([label, id]) => `${label}: ${id ? "Configured" : "Missing"}`).join("\n") + "\n\nHistorical counts are not synced yet.";
@@ -72,18 +69,11 @@ client.on("interactionCreate", async (interaction) => {
       default:
         return;
     }
-    await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+    await message.reply(content);
   } catch (error) {
     console.error("Command error:", error);
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: "Something went wrong. Please try again.", flags: MessageFlags.Ephemeral }).catch(console.error);
-    }
+    await message.reply("Something went wrong. Please try again.").catch(console.error);
   }
 });
 
-const rest = new REST({ version: "10" }).setToken(config.token);
-await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), {
-  body: commands.map((command) => command.toJSON()),
-});
-console.log("Registered guild slash commands.");
 await client.login(config.token);
