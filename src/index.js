@@ -3,7 +3,7 @@ import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, MessageFl
 
 const config = {
   token: process.env.DISCORD_TOKEN,
-  clientId: process.env.DISCORD_CLIENT_ID,
+  clientId: process.env.DISCORD_CLIENT_ID || "1565760164638756935",
   guildId: process.env.DISCORD_GUILD_ID || "1403735082044227626",
   channels: {
     vouches: process.env.VOUCH_CHANNEL_ID || "1403752243999543356",
