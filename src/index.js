@@ -1,5 +1,23 @@
 import "dotenv/config";
+import https from "node:https";
 import { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder, MessageFlags } from "discord.js";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import { ProxyAgent, setGlobalDispatcher } from "undici";
+
+const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+if (proxyUrl) {
+  setGlobalDispatcher(new ProxyAgent(proxyUrl));
+
+  const gatewayAgent = new HttpsProxyAgent(proxyUrl);
+  const request = https.request;
+  https.request = function proxyDiscordGateway(options, ...args) {
+    const hostname = options?.hostname || options?.host;
+    if (hostname === "gateway.discord.gg" && !options.agent) {
+      options = { ...options, agent: gatewayAgent };
+    }
+    return request.call(this, options, ...args);
+  };
+}
 
 const config = {
   token: process.env.DISCORD_TOKEN,
